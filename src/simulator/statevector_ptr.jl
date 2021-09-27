@@ -5,13 +5,19 @@ export applyPauliX!, applyHadamard!, applyRX!, applyRY!
 struct GateIndices
     internal::Vector{Int64}
     external::Vector{Int64}
-    GateIndices(wires, num_qubits) = new(generateBitPatterns(wires, num_qubits), generateBitPatterns(getIndicesAfterExclusion(wires, num_qubits), num_qubits))
 end
 
-function getIndicesAfterExclusion(result::Ptr{Int64}, indicesToExclude::Vector{Int64}, num_qubits::Int64)::Cvoid
+function GateIndices(wires::Vector{Int64}, num_qubits::Int64)
+    in = generateBitPatterns(wires, num_qubits)
+    ex = generateBitPatterns(getIndicesAfterExclusion(wires, num_qubits), num_qubits)
+    return GateIndices(in, ex)
+end
+
+
+function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
     indices = Vector{Int64}(1:1:num_qubits)
     filter!(x->x ∉ indicesToExclude, indices)
-    result = Ptr{Int64}(pointer_from_objref(collect(indices)))
+    return indices
 end
 
 function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
@@ -86,23 +92,23 @@ function _applyRY!( sv::Ptr{ComplexF64},
     ;
 end
 
-Base.@ccallable function applyPauliX!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool = false)::Cvoid
-    gi = GateIndices([wire], log2(num_qubits));
+Base.@ccallable function applyPauliX!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool)::Cvoid
+    gi = GateIndices([wire], Int64(log2(num_elements)));
     _applyPauliX!(sv, gi.internal, gi.external, inverse);
 end
 
-Base.@ccallable function applyHadamard!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool = false)::Cvoid
-    gi = GateIndices([wire], log2(num_elements));
+Base.@ccallable function applyHadamard!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool)::Cvoid
+    gi = GateIndices([wire], Int64(log2(num_elements)));
     _applyHadamard!(sv, gi.internal, gi.external, inverse);
 end
 
-Base.@ccallable function applyRX!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool = false)::Cvoid
-    gi = GateIndices([wire], log2(num_elements));
+Base.@ccallable function applyRX!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool)::Cvoid
+    gi = GateIndices([wire], Int64(log2(num_elements)));
     _applyRX!(sv, gi.internal, gi.external, inverse);
 end
 
 Base.@ccallable function applyRY!(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool)::Cvoid
-    gi = GateIndices([wire], log2(num_elements));
+    gi = GateIndices([wire], Int64(log2(num_elements)));
     _applyRY!(sv, gi.internal, gi.external, inverse);
 end
 
