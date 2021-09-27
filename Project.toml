@@ -1,0 +1,8 @@
+name = "PLext"
+uuid = "82053367-c01f-4416-97d9-d0211191a6fa"
+authors = ["Lee J. O'Riordan <loriordan@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+TestSetExtensions = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
