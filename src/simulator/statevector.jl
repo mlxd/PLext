@@ -8,9 +8,21 @@ import Base.getindex
 import Base.setindex!
 
 mutable struct StateVector
-    num_qubits::Integer
+    num_qubits::Int64
     data::Vector{ComplexF64}
-    StateVector(num_qubits) = new(num_qubits, Vector{ComplexF64}(undef, 2^num_qubits))
+end
+
+Base.@ccallable function create_StateVector(num_qubits::Int64)::StateVector
+    return StateVector(num_qubits, zeros(2^num_qubits).+0im)
+end
+
+mutable struct StateVectorPtr
+    num_qubits::Int64
+    data::Ptr{ComplexF64}
+end
+mutable struct StateVectorRef
+    num_qubits::Int64
+    data::Ref{ComplexF64}
 end
 
 function init_state!(sv::StateVector)
@@ -25,15 +37,15 @@ struct GateIndices
     GateIndices(wires, num_qubits) = new(generateBitPatterns(wires, num_qubits), generateBitPatterns(getIndicesAfterExclusion(wires, num_qubits), num_qubits))
 end
 
-function getindex(sv::StateVector, index::Integer)
+function getindex(sv::StateVector, index::Int64)
     return getindex(sv.data, index)
 end
 
-function setindex!(sv::StateVector, value::Complex, index::Int64)
+function setindex!(sv::StateVector, value::ComplexF64, index::Int64)
     sv.data[index] = value
 end
 
-function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::Int64)
+Base.@ccallable function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
     indices = Set{Int64}(1:1:num_qubits)
     for excl_idx = indicesToExclude
         pop!(indices, excl_idx);
@@ -41,7 +53,7 @@ function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::I
     collect(indices)
 end
 
-function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)
+Base.@ccallable function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
     indices = zeros(1)
     for index_it = Iterators.reverse(qubitIndices)
         value = exp2(num_qubits - index_it)
@@ -54,10 +66,10 @@ function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)
     return indices
 end
 
-function applyPauliX!(sv::StateVector, 
+Base.@ccallable function applyPauliX!(sv::StateVector, 
                     indices::Vector{Int64}, 
                     externalIndices::Vector{Int64}, 
-                    inverse::Bool = false)
+                    inverse::Bool = false)::Cvoid
     for ext_idx = externalIndices
         tmp1 = sv[1 + ext_idx + indices[1]]
         sv[1 + ext_idx + indices[1]] = sv[1 + ext_idx + indices[2]]
@@ -66,15 +78,15 @@ function applyPauliX!(sv::StateVector,
     ;
 end
 
-function applyPauliX!(sv::StateVector, wire::Int64, inverse::Bool = false)
+Base.@ccallable function applyPauliX!(sv::StateVector, wire::Int64, inverse::Bool = false)::Cvoid
     gi = GateIndices([wire], sv.num_qubits);
     applyPauliX!(sv::StateVector, gi.internal, gi.external, inverse);
 end
 
-function applyHadamard!(sv::StateVector, 
+Base.@ccallable function applyHadamard!(sv::StateVector, 
                         indices::Vector{Int64}, 
                         externalIndices::Vector{Int64}, 
-                        inverse::Bool = false)
+                        inverse::Bool = false)::Cvoid
     for ext_idx = externalIndices
         v1 = sv[1 + ext_idx + indices[1]]
         v2 = sv[1 + ext_idx + indices[2]]
@@ -85,16 +97,16 @@ function applyHadamard!(sv::StateVector,
     ;
 end
 
-function applyHadamard!(sv::StateVector, wire::Int64, inverse::Bool = false)
+Base.@ccallable function applyHadamard!(sv::StateVector, wire::Int64, inverse::Bool = false)::Cvoid
     gi = GateIndices([wire], sv.num_qubits);
     applyHadamard!(sv::StateVector, gi.internal, gi.external, inverse);
 end
 
 
-function applyRX!(  sv::StateVector, 
+Base.@ccallable function applyRX!(sv::StateVector, 
                     indices::Vector{Int64}, 
                     externalIndices::Vector{Int64}, 
-                    param::Float64, inverse::Bool = false)
+                    param::Float64, inverse::Bool = false)::Cvoid
     c = cos(param / 2);
     js = (inverse == true) ?  -1im*sin(-param / 2) : 1im*sin(-param / 2);
 
@@ -108,15 +120,15 @@ function applyRX!(  sv::StateVector,
     ;
 end
 
-function applyRX!(sv::StateVector, wire::Int64, inverse::Bool = false)
+Base.@ccallable function applyRX!(sv::StateVector, wire::Int64, inverse::Bool = false)::Cvoid
     gi = GateIndices([wire], sv.num_qubits);
     applyRX!(sv::StateVector, gi.internal, gi.external, inverse);
 end
 
-function applyRY!(  sv::StateVector, 
+Base.@ccallable function applyRY!(  sv::StateVector, 
                     indices::Vector{Int64}, 
                     externalIndices::Vector{Int64}, 
-                    param::Float64, inverse::Bool = false)
+                    param::Float64, inverse::Bool = false)::Cvoid
     c = cos(param / 2);
     s = (inverse == true) ? -sin(param / 2) : sin(param / 2);
 
@@ -130,7 +142,7 @@ function applyRY!(  sv::StateVector,
     ;
 end
 
-function applyRY!(sv::StateVector, wire::Int64, inverse::Bool)
+Base.@ccallable function applyRY!(sv::StateVector, wire::Int64, inverse::Bool)::Cvoid
     gi = GateIndices([wire], sv.num_qubits);
     applyRY!(sv::StateVector, gi.internal, gi.external, inverse);
 end
