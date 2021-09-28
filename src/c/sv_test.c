@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
     int ret_code;
     init_julia(argc, argv);
 
-    int num_qubits = 4;
+    int num_qubits = 20;
     int num_elements = (1<<num_qubits);
     double complex* sv = (double complex*) malloc(sizeof(double complex)*(num_elements));
 

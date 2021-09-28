@@ -13,18 +13,19 @@ extern "C"{
 int main(int argc, char *argv[]){
     int ret_code;
     init_julia(argc, argv);
+    std::cout << "ARGC=" << argc << "::ARGV=" << argv[0] << std::endl;
 
-    int num_qubits = 4;
+    int num_qubits = 24;
     int num_elements = (1<<num_qubits);
     std::vector<std::complex<double>> sv(num_elements);
 
     sv[0] = 1;
     for(int i=0; i < num_elements; i++ ){
-        std::cout << sv[i] << std::endl;
+        //std::cout << sv[i] << std::endl;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
-    for(int i = 1; i < 10000; i ++){
+    for(int i = 1; i <= 10; i ++){
         applyHadamard(sv.data(), num_elements, (i%(num_qubits)), false);
         applyCX(sv.data(), num_elements, (i%(num_qubits)), ((i-1)%(num_qubits)), false);
         applyPauliX(sv.data(), num_elements, (i%(num_qubits)), false);
@@ -33,9 +34,9 @@ int main(int argc, char *argv[]){
     }
 
     for(int i=0; i < num_elements; i++ ){
-        std::cout << sv[i] << std::endl;
+        //std::cout << sv[i] << std::endl;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
     shutdown_julia(ret_code);
     return ret_code;
