@@ -34,12 +34,7 @@ from ._version import __version__
 try:
     import _PyPLext as plextlib
 
-    from .lightning_qubit_ops import (
-        apply,
-        StateVectorC64,
-        StateVectorC128,
-        AdjointJacobianC128,
-    )
+    from plextlib import *
 
     CPP_BINARY_AVAILABLE = True
 except ModuleNotFoundError:
@@ -57,7 +52,6 @@ UNSUPPORTED_PARAM_GATES_ADJOINT = (
     "DoubleExcitationPlus",
     "DoubleExcitationMinus",
 )
-
 
 class PLextQubit(DefaultQubit):
     """PennyLane PLext device.
@@ -78,7 +72,6 @@ class PLextQubit(DefaultQubit):
     pennylane_requires = ">=0.18"
     version = __version__
     author = "Xanadu Inc."
-    _CPP_BINARY_AVAILABLE = True
 
     def __init__(self, wires, *, shots=None):
         super().__init__(wires, shots=shots)
@@ -140,7 +133,7 @@ class PLextQubit(DefaultQubit):
 
         for o in operations:
             name = o.name.split(".")[0]  # The split is because inverse gates have .inv appended
-            method = getattr(sim, name, None)
+            method = getattr(plextlib, name, None)
 
             wires = self.wires.indices(o.wires)
 
@@ -150,27 +143,6 @@ class PLextQubit(DefaultQubit):
             else:
                 inv = o.inverse
                 param = o.parameters
-                method(wires, inv, param)
+                method(state_vector, wires, inv, param)
 
         return np.reshape(state_vector, state.shape)
-
-if not CPP_BINARY_AVAILABLE:
-
-    class PLextQubit(DefaultQubit):
-
-        name = "PLext Qubit PennyLane plugin"
-        short_name = "plext.qubit"
-        pennylane_requires = ">=0.18"
-        version = __version__
-        author = "Xanadu Inc."
-        _CPP_BINARY_AVAILABLE = False
-
-        def __init__(self, *args, **kwargs):
-            warn(
-                "Pre-compiled binaries for plext.qubit are not available. Falling back to "
-                "using the Python-based default.qubit implementation. To manually compile from "
-                "source, follow the instructions at "
-                "https://pennylane-lightning.readthedocs.io/en/latest/installation.html.",
-                UserWarning,
-            )
-            super().__init__(*args, **kwargs)
