@@ -27,17 +27,17 @@ add_custom_target(JLModule ALL)
 
 add_custom_command(TARGET JLModule
     PRE_BUILD
-    COMMAND OUTDIR=${JL_PATH} julia --startup-file=no --project=${JL_PATH}/${JL_PKG} -e "using Pkg; Pkg.instantiate()" 
-    COMMAND OUTDIR=${JL_PATH} julia --startup-file=no --project=${JL_PATH}/${JL_PKG}/build -e "using Pkg; Pkg.instantiate(); include(\"${JL_PATH}/${JL_PKG}/build/build.jl\")" 
+    COMMAND julia --startup-file=no --project=${JL_PATH}/${JL_PKG} -e "using Pkg; Pkg.instantiate()" 
+    COMMAND OUTDIR=${JL_PATH}/PLextCompiled PKGDIR=${JL_PATH}/${JL_PKG} julia --startup-file=no --project=${JL_PATH}/${JL_PKG}/build -e "using Pkg; Pkg.instantiate(); include(\"${JL_PATH}/${JL_PKG}/build/build.jl\")" 
     COMMENT "Build Julia shared extension library"
     VERBATIM
 )
 
 add_library (libplext SHARED IMPORTED)
-set_property(TARGET libplext PROPERTY IMPORTED_LOCATION ${JL_PATH}/build/lib/libplext${CMAKE_SHARED_LIBRARY_SUFFIX})
+set_property(TARGET libplext PROPERTY IMPORTED_LOCATION ${JL_PATH}/PLextCompiled/lib/libplext${CMAKE_SHARED_LIBRARY_SUFFIX})
 add_dependencies(libplext JLModule)
 
-include_directories(BEFORE SYSTEM ${JL_PATH}/build/include)
+include_directories(BEFORE SYSTEM ${JL_PATH}/PLextCompiled/include)
 pybind11_add_module(PyPLext ${PY_PATH}/bindings/pyplext.cpp)
 add_dependencies(PyPLext JLModule)
 

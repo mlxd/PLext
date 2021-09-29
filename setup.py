@@ -122,15 +122,15 @@ class CMakeBuild(build_ext):
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name="PyPLext",
+    name="py",
     version="0.1",
     author="Lee J. O\'Riordan",
     author_email="lee@xanadu.ai",
     description="PennyLane Julia state-vector extension module",
     long_description="",
-    ext_modules=[CMakeExtension("PyPLext")],
+    ext_modules=[CMakeExtension("")],
     packages=find_packages("py"),
-    package_data={'': ['PyPLext.*.so'],},
+    #package_data={'': ['PyPLext.*.so'],},
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
 )

@@ -4,10 +4,7 @@
 #include <pybind11/pybind11.h>
 
 #include "plext.h"
-
-extern "C"{
-#include "julia_init.h"
-}
+#include "jl_init.h"
 
 namespace py = pybind11;
 
