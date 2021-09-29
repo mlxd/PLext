@@ -35,10 +35,6 @@ class CMakeBuild(build_ext):
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
 
-        # CMake lets you override the generator - we need to check this.
-        # Can be set with Conda-Build, for example.
-        cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
-
         # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
         # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
         # from Python.
@@ -48,50 +44,11 @@ class CMakeBuild(build_ext):
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
         ]
         build_args = []
+
         # Adding CMake arguments set as environment variable
         # (needed e.g. to build for ARM OSx on conda-forge)
         if "CMAKE_ARGS" in os.environ:
             cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
-
-        # In this example, we pass in the version to C++. You might not need to.
-        cmake_args += [
-            "-DEXAMPLE_VERSION_INFO={}".format(self.distribution.get_version())
-        ]
-
-        if self.compiler.compiler_type != "msvc":
-            # Using Ninja-build since it a) is available as a wheel and b)
-            # multithreads automatically. MSVC would require all variables be
-            # exported for Ninja to pick it up, which is a little tricky to do.
-            # Users can override the generator with CMAKE_GENERATOR in CMake
-            # 3.15+.
-            if not cmake_generator:
-                try:
-                    import ninja  # noqa: F401
-
-                    cmake_args += ["-GNinja"]
-                except ImportError:
-                    pass
-
-        else:
-
-            # Single config generators are handled "normally"
-            single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
-
-            # CMake allows an arch-in-generator style for backward compatibility
-            contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
-
-            # Specify the arch if using MSVC generator, but only if it doesn't
-            # contain a backward-compatibility arch spec already in the
-            # generator name.
-            if not single_config and not contains_arch:
-                cmake_args += ["-A", PLAT_TO_CMAKE[self.plat_name]]
-
-            # Multi-config generators have a different way to specify configs
-            if not single_config:
-                cmake_args += [
-                    "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir)
-                ]
-                build_args += ["--config", cfg]
 
         if sys.platform.startswith("darwin"):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
@@ -118,19 +75,20 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", "."] + build_args, cwd=self.build_temp
         )
 
-
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name="py",
+    name="PyPLext",
     version="0.1",
     author="Lee J. O\'Riordan",
     author_email="lee@xanadu.ai",
     description="PennyLane Julia state-vector extension module",
     long_description="",
-    ext_modules=[CMakeExtension("")],
-    packages=find_packages("py"),
-    #package_data={'': ['PyPLext.*.so'],},
+    ext_modules=[CMakeExtension(".")],
+    packages=find_packages(where="py"),
+    package_dir={"":"py"},
+    package_data={'PyPLext': ['_PyPLext.*.so'],},
+    include_package_data=True,
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
 )

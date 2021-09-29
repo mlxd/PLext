@@ -38,8 +38,11 @@ set_property(TARGET libplext PROPERTY IMPORTED_LOCATION ${JL_PATH}/PLextCompiled
 add_dependencies(libplext JLModule)
 
 include_directories(BEFORE SYSTEM ${JL_PATH}/PLextCompiled/include)
-pybind11_add_module(PyPLext ${PY_PATH}/bindings/pyplext.cpp)
-add_dependencies(PyPLext JLModule)
+pybind11_add_module(_PyPLext ${PY_PATH}/bindings/pyplext.cpp)
+add_dependencies(_PyPLext JLModule)
 
-target_link_libraries(PyPLext PRIVATE libplext)
-set_target_properties(PyPLext PROPERTIES CXX_VISIBILITY_PRESET hidden)
+target_link_libraries(_PyPLext PRIVATE libplext)
+set_target_properties(_PyPLext PROPERTIES CXX_VISIBILITY_PRESET hidden)
+add_custom_command(TARGET _PyPLext POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_PyPLext> ${PY_PATH}/${PY_PKG}/
+)
