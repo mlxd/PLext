@@ -1,5 +1,7 @@
 module StateVectorP
 
+using Distributed
+
 export applyPauliX!, applyHadamard!, applyRX!, applyRY!
 
 struct GateIndices
@@ -36,10 +38,14 @@ function _applyPauliX!(sv::Ptr{ComplexF64},
                     indices::Vector{Int64}, 
                     externalIndices::Vector{Int64}, 
                     inverse::Bool = false)::Cvoid
-        Threads.@threads for ext_idx = externalIndices
+    for ext_idx = externalIndices
         tmp1 = unsafe_load(sv, 1 + ext_idx + indices[1])
-        unsafe_store!(sv, unsafe_load(sv, 1 + ext_idx + indices[2]), 1 + ext_idx + indices[1])
-        unsafe_store!(sv, tmp1, 1 + ext_idx + indices[2])
+        r1 = remotecall(unsafe_load, sv, 1 + ext_idx + indices[2])
+        remotecall(unsafe_store!, sv, fetch(r1), 1 + ext_idx + indices[1])
+        remotecall(unsafe_store!, sv, tmp1, 1 + ext_idx + indices[1])
+        
+        #unsafe_store!(sv, unsafe_load(sv, 1 + ext_idx + indices[2]), 1 + ext_idx + indices[1])
+        #unsafe_store!(sv, tmp1, 1 + ext_idx + indices[2])
     end
     ;
 end

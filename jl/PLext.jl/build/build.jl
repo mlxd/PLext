@@ -1,6 +1,6 @@
 using PackageCompiler
 
-target_dir = get(ENV, "OUTDIR", "$(@__DIR__)/../PLextCompiled")
+target_dir = get(ENV, "OUTDIR", "$(@__DIR__)/PLextCompiled")
 target_dir = replace(target_dir, "\\"=>"/")       # Change Windows paths to use "/"
 
 package_dir = "."
@@ -12,6 +12,6 @@ PackageCompiler.create_library(package_dir, target_dir;
                                 precompile_statements_file=["$(@__DIR__)/additional_precompile.jl"],
                                 incremental=false,
                                 filter_stdlibs=true,
-                                header_files = ["$(@__DIR__)/plext.h"],
+                                header_files = ["$(@__DIR__)/plext.h", "$(@__DIR__)/jl_init.h"],
                                 force=true
                             )
