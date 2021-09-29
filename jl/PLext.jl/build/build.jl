@@ -3,7 +3,7 @@ using PackageCompiler
 target_dir = get(ENV, "OUTDIR", "$(@__DIR__)/PLextCompiled")
 target_dir = replace(target_dir, "\\"=>"/")       # Change Windows paths to use "/"
 
-package_dir = "."
+package_dir = get(ENV, "OUTDIR", "$(@__DIR__)")
 
 println("Creating library in $target_dir")
 PackageCompiler.create_library(package_dir, target_dir;
