@@ -129,7 +129,7 @@ setup(
     description="PennyLane Julia state-vector extension module",
     long_description="",
     ext_modules=[CMakeExtension("PyPLext")],
-    packages=find_packages(),
+    packages=find_packages("py"),
     package_data={'': ['PyPLext.*.so'],},
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
