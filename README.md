@@ -17,7 +17,12 @@ To keep things simple (or as simple as I can make them), we aim to replicate som
 
 To avoid playing with the C-API in both Numpy and Python I have opted to make use of Pybind11 to enable the wrapping of the generated library. By wrapping the Julia initialization and finalization methods in a C++ class we can make use of an RAII-like means to start and stop the Julia runtime. As the build-system for a multi-language project can become a challenge, I have opted to use CMake coupled with Python setuptools to generated the Julia library, thinly wrap the exposed methods in a Pybind11 interface, link everything nicely, and generate a wheel.
 
-Since building wheels on my local machine will make it tough to share, I opted for the `manylinux2014_x86_64` image, and targetting `manylinux2_24_x86_64` as the wheel version (ie GLIBC v2.24 minimum). We manually install Julia onto the image (see the attached `Dockerfile`), and audit the generated wheel using `auditwheel` to include any required dependent shared libraries required to make use of the built extension.
+Since building wheels on my local machine will make it tough to share, I opted for the `manylinux2014_x86_64` image, and targeted `manylinux2_24_x86_64` as the wheel version (ie GLIBC v2.24 minimum). We manually install Julia onto the image (see the attached `Dockerfile`), and patch the generated wheel using `auditwheel` to include any dependent shared libraries required to make use of the built extension. As such, with Docker installed, the wheel can be built and copied to the root package directory with:
+
+```
+docker build -t plext:latest .
+docker run -i -t -v `pwd`:/io plext:latest /bin/bash -c "cp -rf ./wheelhouse/* /io"
+```
 
 ## Issues
 
