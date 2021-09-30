@@ -29,8 +29,6 @@ import pennylane as qml
 from pennylane.devices import DefaultQubit
 from pennylane.operation import Expectation
 
-from ._version import __version__
-
 try:
     import _PyPLext as plextlib
 
@@ -70,7 +68,6 @@ class PLextQubit(DefaultQubit):
     name = "PLext Qubit PennyLane plugin"
     short_name = "plext.qubit"
     pennylane_requires = ">=0.18"
-    version = __version__
     author = "Xanadu Inc."
 
     def __init__(self, wires, *, shots=None):
