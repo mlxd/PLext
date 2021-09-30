@@ -10,7 +10,9 @@ namespace py = pybind11;
 
 struct JL_Lifetime{
     JL_Lifetime() {
-        init_julia(0, nullptr);
+        std::string name("_PyPLext");
+        auto c_name = const_cast<char*>(name.c_str());
+        init_julia(0, &c_name);
     };
     ~JL_Lifetime() {
         int ret_code = 0;
@@ -18,7 +20,7 @@ struct JL_Lifetime{
     };
 };
 
-PYBIND11_MODULE(PyPLext, m) {
+PYBIND11_MODULE(_PyPLext, m) {
     py::class_<JL_Lifetime>(m, "JL")
         .def(py::init<>());
 

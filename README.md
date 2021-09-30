@@ -19,6 +19,10 @@ To avoid playing with the C-API in both Numpy and Python I have opted to make us
 
 Since building wheels on my local machine will make it tough to share, I opted for the `manylinux2014_x86_64` image, and targetting `manylinux2_24_x86_64` as the wheel version (ie GLIBC v2.24 minimum). We manually install Julia onto the image (see the attached `Dockerfile`), and audit the generated wheel using `auditwheel` to include any required dependent shared libraries required to make use of the built extension.
 
+## Issues
+
+While a built of the Python module directly using CMake works (is importable and runnable with correct outputs), getting the binary to work from a wheel is a little more challenging. [Many packages](https://uwekorn.com/2019/09/15/how-we-build-apache-arrows-manylinux-wheels.html) have moved away from `pip` installing wheels due to the inherent difficulty in dealing with externally compiled libraries, and instead focus on `conda`, which more easily allows installing additional binaries, libraries and tools needed for a given package.
+
 ## Performance
 
 No new package escapes the runtime performance checks. As this is a proof of concept, the runtime performance isn't expected to be on par with Lightning, though it should surpass bare Python/Numpy performance.
