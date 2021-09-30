@@ -45,6 +45,28 @@ function _applyPauliX!(sv::Ptr{ComplexF64},
     ;
 end
 
+function _applyPauliY!(sv::Ptr{ComplexF64},
+                        indices::Vector{Int64}, 
+                        externalIndices::Vector{Int64}, 
+                        inverse::Bool = false)::Cvoid
+    Threads.@threads for ext_idx = externalIndices
+        v0 = unsafe_load(sv, 1 + ext_idx + indices[1])
+        unsafe_store!(sv, -1im*unsafe_load(sv, 1 + ext_idx + indices[2]), 1 + ext_idx + indices[1])
+        unsafe_store!(sv, 1im*v0, 1 + ext_idx + indices[2])
+    end
+;
+end
+
+function _applyPauliZ!( sv::Ptr{ComplexF64},
+                        indices::Vector{Int64}, 
+                        externalIndices::Vector{Int64}, 
+                        inverse::Bool = false)::Cvoid
+    Threads.@threads for ext_idx = externalIndices
+        unsafe_store!(sv, -unsafe_load(sv, 1 + ext_idx + indices[2]), 1 + ext_idx + indices[2])
+    end
+;
+end
+
 function _applyHadamard!(sv::Ptr{ComplexF64}, 
                         indices::Vector{Int64}, 
                         externalIndices::Vector{Int64}, 
@@ -93,6 +115,26 @@ function _applyRY!( sv::Ptr{ComplexF64},
     ;
 end
 
+function _applyRZ!( sv::Ptr{ComplexF64}, 
+                    indices::Vector{Int64}, 
+                    externalIndices::Vector{Int64}, 
+                    param::Float64, inverse::Bool = false)::Cvoid
+    first = exp(-1im*angle / 2);
+    second = exp(1im*angle / 2);
+    shift1 = (inverse == true) ? conj(first) : first;
+    shift2 = (inverse == true) ? conj(second) : second;
+    
+
+    Threads.@threads for ext_idx = externalIndices
+        v1 = unsafe_load(sv, 1 + ext_idx + indices[1])
+        v2 = unsafe_load(sv, 1 + ext_idx + indices[2])
+
+        unsafe_store!(sv, v1*shift1, 1 + ext_idx + indices[1])
+        unsafe_store!(sv, v2*shift2, 1 + ext_idx + indices[2])
+    end
+    ;
+end
+
 function _applyCX!(sv::Ptr{ComplexF64},
     indices::Vector{Int64}, 
     externalIndices::Vector{Int64}, 
@@ -123,6 +165,11 @@ end
 Base.@ccallable function applyRY(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool, param::Float64)::Cvoid
     gi = GateIndices([wire+1], Int64(log2(num_elements)));
     _applyRY!(sv, gi.internal, gi.external, param, inverse);
+end
+
+Base.@ccallable function applyRZ(sv::Ptr{ComplexF64}, num_elements::Int64, wire::Int64, inverse::Bool, param::Float64)::Cvoid
+    gi = GateIndices([wire+1], Int64(log2(num_elements)));
+    _applyRZ!(sv, gi.internal, gi.external, param, inverse);
 end
 
 Base.@ccallable function applyCX(sv::Ptr{ComplexF64}, num_elements::Int64, ctrl_wire::Int64, tgt_wire::Int64, inverse::Bool)::Cvoid
