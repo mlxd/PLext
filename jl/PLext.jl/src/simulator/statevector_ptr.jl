@@ -1,5 +1,8 @@
 module StateVectorP
 
+using Memoize
+using LRUCache
+
 export _applyPauliX!, _applyHadamard!, _applyRX!, _applyRY!, _applyCX!
 export applyPauliX, applyHadamard, applyRX, applyRY, applyCX
 
@@ -15,13 +18,13 @@ function GateIndices(wires::Vector{Int64}, num_qubits::Int64)
 end
 
 
-function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
+@memoize LRU{Tuple{Vector{Int64},Int64},Vector{Int64}}(maxsize=10) function getIndicesAfterExclusion(indicesToExclude::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
     indices = Vector{Int64}(1:1:num_qubits)
     filter!(x->x ∉ indicesToExclude, indices)
     return indices
 end
 
-function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
+@memoize LRU{Tuple{Vector{Int64},Int64},Vector{Int64}}(maxsize=10) function generateBitPatterns(qubitIndices::Vector{Int64}, num_qubits::Int64)::Vector{Int64}
     indices = zeros(1)
     for index_it = Iterators.reverse(qubitIndices)
         value = exp2(num_qubits - index_it)
