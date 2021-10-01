@@ -32,3 +32,6 @@ While a built of the Python module directly using CMake works (is importable and
 
 No new package escapes the runtime performance checks. As this is a proof of concept, the runtime performance isn't expected to be on par with Lightning, though it should surpass bare Python/Numpy performance.
 The notebook `py/LightningVPyPLext.jl` showcases this for Lightning and PLext. Interestingly, when adding in memoization functionality with an LRU cache (to avoid blowing the memory wall) we get almost the same performance as lightning.
+
+## Licensing
+While everything under here I have provided can be licensed under Apache, there are snippets from Julia, Python and elsewhere that are under other licenses (eg the Julia ecosystem and packages tend to be MIT).
