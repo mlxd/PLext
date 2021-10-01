@@ -3,3 +3,5 @@ uuid = "3112a000-2112-11ec-221c-93cc41953c68"
 [deps]
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
+Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
+LRUCache = "8ac3fa9e-de4c-5943-b1dc-09c6b5f20637"
